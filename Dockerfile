@@ -1,7 +1,8 @@
 # setup webserver
-FROM casjaysdev/php:latest as apache2
+FROM casjaysdevdocker/php:latest as apache2
 
-RUN apk -U upgrade && apk add --no-cache \
+RUN apk -U upgrade && \
+  apk add --no-cache \
   apache2 \
   apache2-brotli \
   apache2-ctl \
@@ -25,12 +26,12 @@ ARG BUILD_DATE="$(date +'%Y-%m-%d %H:%M')"
 LABEL \
   org.label-schema.name="apache2" \
   org.label-schema.description="Apache2 web server based on Alpine" \
-  org.label-schema.url="https://github.com/casjaysdev/apache" \
-  org.label-schema.vcs-url="https://github.com/casjaysdev/apache" \
+  org.label-schema.url="https://hub.docker.com/r/casjaysdevdocker/apache" \
+  org.label-schema.vcs-url="https://github.com/casjaysdevdocker/apache" \
   org.label-schema.build-date=$BUILD_DATE \
   org.label-schema.version=$BUILD_DATE \
   org.label-schema.vcs-ref=$BUILD_DATE \
-  org.label-schema.license="MIT" \
+  org.label-schema.license="WTFPL" \
   org.label-schema.vcs-type="Git" \
   org.label-schema.schema-version="latest" \
   org.label-schema.vendor="CasjaysDev" \
