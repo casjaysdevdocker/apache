@@ -1,6 +1,9 @@
 FROM casjaysdevdocker/alpine:latest as build
 
-ARG LICENSE=WTFPL   IMAGE_NAME=apache   TIMEZONE=America/New_York   PORT=
+ARG LICENSE=WTFPL \
+  IMAGE_NAME=apache \
+  TIMEZONE=America/New_York \
+  PORT=
 
 ENV SHELL=/bin/bash \
   TERM=xterm-256color \
@@ -9,7 +12,19 @@ ENV SHELL=/bin/bash \
 
 RUN mkdir -p /bin/ /config/ /data/ && \
   rm -Rf /bin/.gitkeep /config/.gitkeep /data/.gitkeep && \
-  apk update -U --no-cache
+  apk update -U --no-cache && \
+  apk add --no-cache \
+  apache2 \
+  apache2-brotli \
+  apache2-ctl \
+  apache2-http2 \
+  apache2-icons \
+  apache2-ldap \
+  apache2-lua \
+  apache2-mod-wsgi \
+  apache2-proxy \
+  apache2-ssl \
+  apache2-webdav
 
 COPY ./bin/. /usr/local/bin/
 COPY ./config/. /config/
@@ -47,4 +62,3 @@ COPY --from=build /. /
 HEALTHCHECK CMD ["/usr/local/bin/entrypoint-apache.sh", "healthcheck"]
 
 ENTRYPOINT ["/usr/local/bin/entrypoint-apache.sh"]
-
