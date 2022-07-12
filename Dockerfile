@@ -1,49 +1,50 @@
-# setup webserver
-FROM casjaysdevdocker/php:latest as apache2
+FROM casjaysdevdocker/alpine:latest as build
 
-RUN apk -U upgrade && \
-  apk add --no-cache \
-  apache2 \
-  apache2-brotli \
-  apache2-ctl \
-  apache2-http2 \
-  apache2-icons \
-  apache2-ldap \
-  apache2-lua \
-  apache2-mod-wsgi \
-  apache2-proxy \
-  apache2-ssl \
-  apache2-webdav 
+ARG LICENSE=WTFPL   IMAGE_NAME=apache   TIMEZONE=America/New_York   PORT=
 
-COPY ./data/htdocs/www/ /var/www/localhost/htdocs/
-COPY ./config/apache2/httpd.conf /etc/apache2/httpd.conf
+ENV SHELL=/bin/bash \
+  TERM=xterm-256color \
+  HOSTNAME=${HOSTNAME:-casjaysdev-$IMAGE_NAME} \
+  TZ=$TIMEZONE
+
+RUN mkdir -p /bin/ /config/ /data/ && \
+  rm -Rf /bin/.gitkeep /config/.gitkeep /data/.gitkeep && \
+  apk update -U --no-cache
+
 COPY ./bin/. /usr/local/bin/
+COPY ./config/. /config/
+COPY ./data/. /data/
 
-# build container
-FROM apache2
-ARG BUILD_DATE="$(date +'%Y-%m-%d %H:%M')" 
+FROM scratch
+ARG BUILD_DATE="$(date +'%Y-%m-%d %H:%M')"
 
-LABEL \
-  org.label-schema.name="apache2" \
-  org.label-schema.description="Apache2 web server based on Alpine" \
+LABEL org.label-schema.name="apache" \
+  org.label-schema.description="Containerized version of apache" \
   org.label-schema.url="https://hub.docker.com/r/casjaysdevdocker/apache" \
   org.label-schema.vcs-url="https://github.com/casjaysdevdocker/apache" \
   org.label-schema.build-date=$BUILD_DATE \
   org.label-schema.version=$BUILD_DATE \
   org.label-schema.vcs-ref=$BUILD_DATE \
-  org.label-schema.license="WTFPL" \
+  org.label-schema.license="$LICENSE" \
   org.label-schema.vcs-type="Git" \
   org.label-schema.schema-version="latest" \
   org.label-schema.vendor="CasjaysDev" \
-  maintainer="CasjaysDev <docker-admin@casjaysdev.com>" 
+  maintainer="CasjaysDev <docker-admin@casjaysdev.com>"
 
-ENV PHP_SERVER=apache2
+ENV SHELL="/bin/bash" \
+  TERM="xterm-256color" \
+  HOSTNAME="casjaysdev-apache" \
+  TZ="${TZ:-America/New_York}"
 
-EXPOSE 19000
+WORKDIR /root
 
-WORKDIR /data/htdocs
-VOLUME [ "/data", "/config" ]
+VOLUME ["/root","/config","/data"]
+
+EXPOSE $PORT
+
+COPY --from=build /. /
 
 HEALTHCHECK CMD ["/usr/local/bin/entrypoint-apache.sh", "healthcheck"]
 
 ENTRYPOINT ["/usr/local/bin/entrypoint-apache.sh"]
+
